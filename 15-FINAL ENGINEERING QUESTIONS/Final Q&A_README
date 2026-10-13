@@ -1,0 +1,101 @@
+# 15. Final Engineering Questions — XYZZ Company
+
+## Question 1: If you joined XYZZ Company and were asked to migrate the existing serverless workload to EC2/ECS, what are the first five things you would do before making any production changes?
+
+1. Understand the existing architecture and business requirements
+
+I would review the existing serverless architecture, including AWS Lambda, API Gateway, SQS, EventBridge, databases, IAM roles and other dependencies. I would understand the request flow, business-critical operations, traffic patterns and availability requirements before proposing changes.
+
+2. Establish a performance and cost baseline
+
+I would analyze CloudWatch metrics and logs to understand current request latency, throughput, error rates, Lambda duration, concurrency, throttling and database performance. I would also review AWS Cost Explorer to understand the current cost and identify the expected operational and financial impact of moving to EC2 or ECS.
+
+3. Assess application compatibility and dependencies
+
+I would verify runtime and library compatibility, application startup requirements, environment variables, secrets, networking, file-system dependencies and database connections. I would identify Lambda-specific behavior that needs to change, such as execution time limits, event handling and scaling assumptions.
+
+4. Design the target architecture and migration plan
+
+I would decide whether EC2 or ECS is the better fit based on the workload. I would design the required VPC, private subnets, security groups, load balancer, Auto Scaling, IAM roles, monitoring, logging and deployment process. I would also define migration phases, testing requirements, rollback criteria and a traffic-switching strategy.
+
+5. Build and validate a non-production environment
+
+I would provision the target environment using Infrastructure as Code, deploy the application to a development or staging environment, and run functional, integration, load and security tests. I would validate database connectivity, observability, scaling behavior and recovery procedures before considering any production traffic shift.
+
+I would not make production changes until the target environment, acceptance criteria, rollback process and stakeholder approvals were in place.
+
+## Question 2: What are the biggest technical risks you see when migrating a production serverless application to a server-based/containerized architecture?
+
+1. Application behavior and runtime differences
+
+Lambda provides a managed execution environment and event-driven invocation model. Moving to EC2 or ECS introduces application lifecycle management, persistent processes, container configuration and potentially different runtime assumptions. These differences can introduce bugs or unexpected behavior.
+
+2. Scaling and capacity management
+
+Lambda scales according to invocation demand within service limits. With EC2 or ECS, capacity, task counts, scaling policies and startup time must be configured and tested. Incorrect configuration can cause insufficient capacity during traffic spikes or unnecessary costs during low traffic.
+
+3. Availability and deployment risks
+
+A server-based architecture requires careful health checks, load balancing, multi-AZ deployment, rolling updates and recovery mechanisms. A faulty deployment or incorrect health-check configuration can make all application targets unavailable and increase 5xx errors.
+
+4. Database connection exhaustion
+
+Serverless applications may create database connections differently from persistent application processes. Multiple EC2 instances or ECS tasks can create large numbers of concurrent connections, potentially exhausting database connection limits and causing timeouts.
+
+5. Networking and security misconfiguration
+
+The new architecture introduces additional network and infrastructure configuration, including VPC routing, security groups, private subnets, load balancers and container port mappings. Incorrect configuration can expose resources or prevent legitimate application-to-database communication.
+
+6. State management and background processing
+
+Applications must not depend on local instance or container storage for durable state. Background tasks, retries, event processing and duplicate-message handling must remain reliable when workloads are moved or redesigned.
+
+7. Observability and operational complexity
+
+The team becomes responsible for monitoring application processes, containers, operating systems, resource utilization, patching and capacity. Insufficient monitoring can make failures harder to diagnose and recover from.
+
+8. Cost and migration complexity
+
+EC2 or ECS may introduce costs for continuously running compute, load balancers, storage, networking and operational management. Running both architectures during migration can temporarily increase costs, and an incomplete dependency assessment can make the migration difficult to reverse.
+
+To reduce these risks, I would use a phased migration, automate infrastructure provisioning, test under realistic workloads, monitor each phase and maintain a tested rollback path.
+
+## Question 3: If the migration causes increased latency and 5xx errors, what would be your decision-making process for continuing, pausing, or rolling back the migration?
+
+I would make the decision based on user impact, service-level objectives, error rates, latency, target health and the ability to restore service safely. I would define these thresholds before the migration rather than making decisions based on guesswork during an incident.
+
+### Step 1: Assess the impact
+
+I would compare current production metrics with the established baseline, including:
+
+- Request latency, particularly p95 and p99.
+- HTTP 5xx error rate and request volume.
+- ALB healthy and unhealthy target counts.
+- EC2/ECS CPU, memory, task failures and scaling activity.
+- Database connections, query latency and application logs.
+
+I would determine whether the degradation is isolated to the migrated workload or affects the entire platform.
+
+### Step 2: Continue, pause or roll back
+
+Continue the migration when latency and error rates remain within agreed service-level objectives, health checks pass, capacity is sufficient, and the new architecture performs as expected under the current traffic level.
+
+Pause the migration when latency or error rates begin increasing beyond the agreed warning thresholds, when capacity or database behavior is uncertain, or when monitoring shows an unexplained regression. I would stop shifting additional traffic while investigating the issue.
+
+Roll back the migration when error rates or latency breach critical thresholds, the application becomes unavailable, data correctness is at risk, or the team cannot restore acceptable service within the agreed recovery window. I would route traffic back to the known-good serverless implementation using the established traffic-switching mechanism.
+
+### Step 3: Identify and correct the root cause
+
+I would correlate the incident with deployment changes and investigate ALB target health, application logs, container health, CPU and memory, security groups, application ports, database connectivity and connection limits. I would correct the identified problem in a controlled environment and repeat the relevant tests before resuming the migration.
+
+### Step 4: Verify recovery
+
+After a rollback or corrective action, I would verify that latency and error rates have returned to acceptable levels, healthy targets are available, database operations are successful and critical business workflows work correctly. I would continue monitoring until the system is stable.
+
+### Step 5: Resume only when safe
+
+I would resume the migration in small increments after the root cause has been addressed, tests pass, rollback remains available and the required stakeholders approve the next phase. I would document the incident, its root cause and the preventive actions needed to avoid recurrence.
+
+Decision principle: Protect production availability and data correctness first. Continue only when evidence supports it, pause when the situation is uncertain, and roll back when the risk to users exceeds the agreed limits.
+
+These answers emphasize controlled migration, evidence-based decisions, reliability and rollback readiness—the key engineering considerations when moving a production workload from serverless to EC2/ECS.

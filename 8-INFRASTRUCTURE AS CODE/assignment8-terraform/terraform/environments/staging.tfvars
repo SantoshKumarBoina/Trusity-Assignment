@@ -1,0 +1,9 @@
+environment = "staging"
+desired_capacity = 2
+min_size = 2
+max_size = 4
+multi_az = true
+enable_deletion_protection = true
+skip_final_snapshot = false
+final_snapshot_identifier = "xyzz-orders-staging-final-20261013"
+db_backup_retention_days = 7

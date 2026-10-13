@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euxo pipefail
+dnf update -y
+dnf install -y docker
+systemctl enable --now docker
+
+# Placeholder web server for infrastructure smoke testing only.
+# Replace this with a real application image and a deployment process for the assessment.
+docker run -d --restart unless-stopped --name assessment-placeholder \
+  -p ${app_port}:80 public.ecr.aws/nginx/nginx:stable
+
+# The DB variables are intentionally not written to disk or used by this placeholder.
+# Application deployment should fetch DB credentials from Secrets Manager at runtime.

@@ -1,0 +1,14 @@
+variable "project_name" { type = string }
+variable "environment" { type = string }
+variable "private_subnet_ids" { type = list(string) }
+variable "instance_security_group_id" { type = string }
+variable "target_group_arn" { type = string }
+variable "instance_type" { type = string }
+variable "ami_id" { type = string }
+variable "app_port" { type = number }
+variable "desired_capacity" { type = number }
+variable "min_size" { type = number }
+variable "max_size" { type = number }
+variable "db_host" { type = string }
+variable "db_name" { type = string }
+variable "db_secret_arn" { type = string }

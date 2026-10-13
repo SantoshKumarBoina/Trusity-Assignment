@@ -1,0 +1,11 @@
+variable "project_name" { type = string }
+variable "db_subnet_ids" { type = list(string) }
+variable "db_security_group_id" { type = string }
+variable "db_instance_class" { type = string }
+variable "db_name" { type = string }
+variable "db_username" { type = string }
+variable "multi_az" { type = bool }
+variable "enable_deletion_protection" { type = bool }
+variable "skip_final_snapshot" { type = bool }
+variable "backup_retention_days" { type = number }
+variable "final_snapshot_identifier" { type = string }
