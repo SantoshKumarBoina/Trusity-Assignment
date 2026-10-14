@@ -1,0 +1,80 @@
+name: CI-CD Demo
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install test dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Run automated tests
+        run: pytest -v
+      - name: Audit Python dependencies
+        run: pip-audit -r requirements.txt
+
+  docker:
+    name: Build and scan Docker image
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t cicd-demo:${{ github.sha }} .
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cicd-demo:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+  terraform:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - name: Check Terraform formatting
+        run: terraform -chdir=terraform fmt -check -recursive
+      - name: Initialize Terraform without backend
+        run: terraform -chdir=terraform init -backend=false
+      - name: Validate Terraform configuration
+        run: terraform -chdir=terraform validate
+
+  deploy-simulation:
+    name: Deployment (simulation)
+    runs-on: ubuntu-latest
+    needs: [test, docker, terraform]
+    if: github.event_name != 'pull_request'
+    environment: demo
+    steps:
+      - name: Simulate deployment
+        run: |
+          echo "All required CI checks passed."
+          echo "Would deploy image tag: $GITHUB_SHA"
+          echo "AWS credentials and a deployment target are not configured."
+          echo "This is a deployment simulation, not a real production deployment."
